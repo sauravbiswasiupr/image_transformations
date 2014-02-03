@@ -1,0 +1,112 @@
+# ----------------------------------------------------------------------------
+# BEGIN EXPERIMENT ISOLATION CODE
+
+# Path to pass to jobman sqlschedule. IMPORTANT TO CHANGE TO REFLECT YOUR CLONE.
+# Make sure this is accessible from the default $PYTHONPATH (in your .bashrc)
+# (and make sure every subdirectory has its __init__.py file)
+EXPERIMENT_PATH = "ift6266_mnistcrbm_exp1.ift6266.deep.crbm.mnist_crbm.jobman_entrypoint"
+
+def isolate_experiment():
+    '''
+    This makes sure we use the codebase clone created for this experiment.
+    I.e. if you want to make modifications to the codebase but don't want your
+    running experiment code to be impacted by those changes, first copy the
+    codebase somewhere, and configure this section. It will make sure we import
+    from the right place.
+
+    MUST BE DONE BEFORE IMPORTING ANYTHING ELSE
+    (Leave this comment there so others will understand what's going on)
+    '''
+
+    # Place where you copied modules that should be frozen for this experiment
+    codebase_clone_path = "/u/savardf/ift6266/experiment_clones/ift6266_mnistcrbm_exp1"
+
+    # Places where there might be conflicting modules from your $PYTHONPATH
+    remove_these_from_pythonpath = ["/u/savardf/ift6266/dev_code"]
+
+    import sys
+    sys.path[0:0] = [codebase_clone_path]
+
+    # remove paths we specifically don't want in $PYTHONPATH
+    for bad_path in remove_these_from_pythonpath:
+        sys.path[:] = [el for el in sys.path if not el in (bad_path, bad_path+"/")]
+
+    # Make the imports
+    import ift6266
+
+    # Just making sure we're importing from the right place
+    modules_to_check = [ift6266]
+    for module in modules_to_check:
+        if not codebase_clone_path in module.__path__[0]:
+            raise RuntimeError("Module loaded from incorrect path "+module.__path__[0])
+
+# END EXPERIMENT ISOLATION CODE
+# ----------------------------------------------------------------------------
+
+from jobman import DD
+
+'''
+These are parameters used by mnist_crbm.py. They'll end up as globals in there.
+
+Rename this file to config.py and configure as needed.
+DON'T add the renamed file to the repository, as others might use it
+without realizing it, with dire consequences.
+'''
+
+# change "sandbox" when you're ready
+JOBDB = 'postgres://ift6266h10@gershwin/ift6266h10_sandbox_db/yourtablenamehere'
+
+# Set this to True when you want to run cluster tests, ie. you want
+# to run on the cluster, many jobs, but want to reduce the training
+# set size and the number of epochs, so you know everything runs
+# fine on the cluster.
+# Set this PRIOR to inserting your test jobs in the DB.
+TEST_CONFIG = False
+
+# save params at training end
+SAVE_PARAMS = True
+
+IMAGE_OUTPUT_DIR = 'img/'
+
+# number of minibatches before taking means for valid error etc.
+REDUCE_EVERY = 100
+
+# print series to stdout too (otherwise just produce the HDF5 file)
+SERIES_STDOUT_TOO = False
+
+# every X minibatches
+VISUALIZE_EVERY = 1000 # x20, ie. every 20,000 examples
+GIBBS_STEPS_IN_VIZ_CHAIN = 1000
+
+if TEST_CONFIG:
+    REDUCE_EVERY = 10
+    VISUALIZE_EVERY = 20
+
+# This is to configure insertion of jobs on the cluster.
+# Possible values the hyperparameters can take. These are then
+# combined with produit_cartesien_jobs so we get a list of all
+# possible combinations, each one resulting in a job inserted
+# in the jobman DB.
+JOB_VALS = {'learning_rate': [1.0, 0.1, 0.01],
+        'sparsity_lambda': [3.0,0.5],
+        'sparsity_p': [0.3,0.05],
+        'num_filters': [40,15],
+        'filter_size': [12,7],
+        'minibatch_size': [20],
+        'num_epochs': [20]}
+
+# Just useful for tests... minimal number of epochs
+# Useful when launching a single local job
+DEFAULT_STATE = DD({'learning_rate': 0.1,
+        'sparsity_lambda': 1.0,
+        'sparsity_p': 0.05,
+        'num_filters': 40,
+        'filter_size': 12,
+        'minibatch_size': 10,
+        'num_epochs': 20})
+
+# To reinsert duplicate of jobs that crashed
+REINSERT_COLS = ['learning_rate','sparsity_lambda','sparsity_p','num_filters','filter_size','minibatch_size','dupe']
+#REINSERT_JOB_VALS = [\
+#            [,2],]
+

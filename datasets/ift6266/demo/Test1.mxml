@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="init()">
+	<mx:Image x="432" y="394" width="300" height="300" id="img" autoLoad="true" scaleContent="true"/>
+	<mx:Image x="116" y="197" width="200" height="200" id="imdraw"/>
+	<mx:HSlider x="503" y="150" id="rot" minimum="-180" maximum="180" value="0" liveDragging="true" change="changeImage()"/>
+	<mx:HSlider x="503" y="120" minimum="-2" maximum="2" value="1" liveDragging="true" id="scalex" change="changeImage()"/>
+	<mx:HSlider x="687" y="120" minimum="-2" maximum="2" value="1" liveDragging="true" id="scaley" change="changeImage()"/>
+	<mx:HSlider x="503" y="90" minimum="-10" maximum="10" value="0" liveDragging="true" id="transx" change="changeImage()"/>
+	<mx:HSlider x="683" y="90" minimum="-10" maximum="10" value="0" liveDragging="true" id="transy" change="changeImage()"/>
+	<mx:HSlider x="503" y="178" id="skew" liveDragging="true" minimum="-1" maximum="1" change="changeImage()" value="0"/>
+	<mx:Label x="839" y="414" text="X" id="lab0" width="43" height="36" fontSize="12" fontWeight="bold" textAlign="left" color="#0B333C" fontFamily="Verdana"/>
+	<mx:Button x="128" y="405" label="Erase" click="can2.graphics.clear();changeDrawing();changeImage()"/>
+	<mx:Label x="371" y="90" text="Translation"/>
+	<mx:Label x="839" y="285" text="Restrict to:"/>
+	<mx:Label x="371" y="116" text="Scale"/>
+	<mx:Label x="371" y="148" text="Rotation"/>
+	<mx:Label x="371" y="175" text="Skew"/>
+	<mx:Label x="371" y="206" text="Salt &amp; Pepper Noise" width="134" height="20"/>
+	<mx:HSlider x="503" y="208" id="spnoise" liveDragging="true" minimum="0" maximum="1" change="changeImage()" value="0"/>
+	<mx:Label x="371" y="232" text="Gaussian Noise" width="108" height="20"/>
+	<mx:HSlider x="503" y="234" id="gnoise" liveDragging="true" minimum="0" maximum="1" change="changeImage()" value="0"/>
+	<mx:Label x="118" y="175" text="Draw here:" fontSize="10" fontWeight="bold"/>
+	<mx:Label x="371" y="64" text="Transforms:" fontSize="10" fontWeight="bold"/>
+	<mx:Label x="433" y="368" text="Resulting image:" fontSize="10" fontWeight="bold"/>
+	<mx:Label x="835" y="236" text="Classifier:" fontSize="10" fontWeight="bold"/>
+
+<mx:Script>
+	<![CDATA[
+		import mx.effects.Blur;
+		import flash.utils.*;
+		import flash.display.*;
+		import flash.geom.*;
+		private var can2:Sprite = new Sprite()
+
+        import cmodule.mlp_conv.CLibInit;
+        
+        [Embed(source="mlp_w1", mimeType="application/octet-stream")] private static var mlp_w1:Class;
+        [Embed(source="mlp_b1", mimeType="application/octet-stream")] private static var mlp_b1:Class;
+        [Embed(source="mlp_w2", mimeType="application/octet-stream")] private static var mlp_w2:Class;
+        [Embed(source="mlp_b2", mimeType="application/octet-stream")] private static var mlp_b2:Class;
+
+        [Embed(source="sda_w1", mimeType="application/octet-stream")] private static var sda_w1:Class;
+        [Embed(source="sda_b1", mimeType="application/octet-stream")] private static var sda_b1:Class;
+        [Embed(source="sda_w2", mimeType="application/octet-stream")] private static var sda_w2:Class;
+        [Embed(source="sda_b2", mimeType="application/octet-stream")] private static var sda_b2:Class;
+        [Embed(source="sda_w3", mimeType="application/octet-stream")] private static var sda_w3:Class;
+        [Embed(source="sda_b3", mimeType="application/octet-stream")] private static var sda_b3:Class;
+        [Embed(source="sda_w4", mimeType="application/octet-stream")] private static var sda_w4:Class;
+        [Embed(source="sda_b4", mimeType="application/octet-stream")] private static var sda_b4:Class;
+
+        private var loader:CLibInit;
+	    private var lib:Object;
+	    
+	    private var carac:String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+		 
+		private function init():void{
+            var mlp_w1_data:ByteArray = new mlp_w1();
+            var mlp_b1_data:ByteArray = new mlp_b1();
+            var mlp_w2_data:ByteArray = new mlp_w2();
+            var mlp_b2_data:ByteArray = new mlp_b2();
+
+            var sda_w1_data:ByteArray = new sda_w1();
+            var sda_b1_data:ByteArray = new sda_b1();
+            var sda_w2_data:ByteArray = new sda_w2();
+            var sda_b2_data:ByteArray = new sda_b2();
+            var sda_w3_data:ByteArray = new sda_w3();
+            var sda_b3_data:ByteArray = new sda_b3();
+            var sda_w4_data:ByteArray = new sda_w4();
+            var sda_b4_data:ByteArray = new sda_b4();
+
+            mlp_w1_data.endian = Endian.LITTLE_ENDIAN;
+            mlp_b1_data.endian = Endian.LITTLE_ENDIAN;
+            mlp_w2_data.endian = Endian.LITTLE_ENDIAN;
+            mlp_b2_data.endian = Endian.LITTLE_ENDIAN;
+
+            sda_w1_data.endian = Endian.LITTLE_ENDIAN;
+            sda_b1_data.endian = Endian.LITTLE_ENDIAN;
+            sda_w2_data.endian = Endian.LITTLE_ENDIAN;
+            sda_b2_data.endian = Endian.LITTLE_ENDIAN;
+            sda_w3_data.endian = Endian.LITTLE_ENDIAN;
+            sda_b3_data.endian = Endian.LITTLE_ENDIAN;
+            sda_w4_data.endian = Endian.LITTLE_ENDIAN;
+            sda_b4_data.endian = Endian.LITTLE_ENDIAN;
+            
+            mlp_w1_data.position = 0;
+            mlp_b1_data.position = 0;
+            mlp_w2_data.position = 0;
+            mlp_b2_data.position = 0;
+
+            sda_w1_data.position = 0;
+            sda_b1_data.position = 0;
+            sda_w2_data.position = 0;
+            sda_b2_data.position = 0;
+            sda_w3_data.position = 0;
+            sda_b3_data.position = 0;
+            sda_w4_data.position = 0;
+            sda_b4_data.position = 0;
+
+	        loader = new CLibInit;
+	        lib = loader.init();
+	        lib.initparam(mlp_w1_data, mlp_b1_data, mlp_w2_data, mlp_b2_data, sda_w1_data, sda_b1_data, sda_w2_data, sda_b2_data, sda_w3_data, sda_b3_data, sda_w4_data, sda_b4_data);
+            lib.choosemodel(0);
+		
+			changeDrawing();
+			changeImage();
+		
+			imdraw.addEventListener(MouseEvent.MOUSE_DOWN, begin_drawing);
+			//imdraw.addEventListener(MouseEvent.ROLL_OUT, stop_drawing);
+			imdraw.addEventListener(MouseEvent.MOUSE_UP, stop_drawing);
+			
+			calc_pred();
+		}
+
+        private function calc_done(out:Array):void {
+			var i:uint, s:Number = 0;
+			if (!ch_dig.selected) for(i=0; i<10; i++) out[i] = 0;
+            if (!ch_upper.selected) for(i=10; i<36; i++) out[i] = 0;
+   			if (!ch_lower.selected) for(i=36; i<62; i++) out[i] = 0;
+   			if(modelnum.selectedIndex == 0) {
+   				for(i=0; i<62; i++) s += out[i];
+   				if(s) for(i=0; i<62; i++) out[i] /= s;
+   			}
+   			
+            var ind:Array = out.sort(Array.DESCENDING | Array.RETURNINDEXEDARRAY | Array.NUMERIC);
+			lab0.text = carac.charAt(ind[0])
+			lab1.text = carac.charAt(ind[1])
+			lab2.text = carac.charAt(ind[2])
+			rec0.width = out[ind[0]]*130
+			rec1.width = out[ind[1]]*130
+			rec2.width = out[ind[2]]*130
+			//rec0.setStyle("backgroundColor", 0xff0000);
+			
+			setTimeout(calc_pred, 10);
+        }
+
+		private function calc_pred():void {
+			var bd:BitmapData = imnorm.source.bitmapData;
+			var rect:Rectangle = new Rectangle(0, 0, 32, 32);
+			var bytes:ByteArray = bd.getPixels(rect);
+			bytes.position = 0;
+			lib.choosemodel(modelnum.selectedIndex);
+			lib.prediction(calc_done, bytes);
+        }
+					
+		private function begin_drawing(event:MouseEvent):void {
+			can2.graphics.lineStyle(thickness.value * imdraw.width/32, 0xFFFFFFFF);
+			can2.graphics.moveTo(imdraw.mouseX, imdraw.mouseY)
+		    imdraw.addEventListener(MouseEvent.MOUSE_MOVE, draw_line);
+		}
+		private function stop_drawing(e:MouseEvent):void
+		{
+		    imdraw.removeEventListener(MouseEvent.MOUSE_MOVE, draw_line);
+		}
+		
+		private function draw_line(e:MouseEvent):void
+		{
+			var x:Number = imdraw.mouseX, y:Number = imdraw.mouseY
+			/*if (x<0 || x>imdraw.width || y<0 || y>imdraw.height) {
+				stop_drawing(e)
+				return				
+			}*/
+		    can2.graphics.lineTo(x, y);
+			changeDrawing()		
+			changeImage()
+		    e.updateAfterEvent();
+		}
+
+		private function changeDrawing():void{
+			var bitmapDataObject2:BitmapData = new BitmapData(32, 32, false, 0x00000000);
+			var rect:Rectangle = new Rectangle(0, 0, 32, 32);
+			var m:Matrix = new Matrix()
+			m.scale(32/imdraw.width, 32/imdraw.height)
+			bitmapDataObject2.draw(can2,m,null,null,null,true);
+			var myBitmap:Bitmap = new Bitmap(bitmapDataObject2);
+			imdraw.source = myBitmap;
+		}
+
+		private var ready:Boolean = false;
+        private var cache:Number;
+        public function RandNormal(sigma:Number):Number {
+    		ready = !ready;
+            if (!ready) return cache * sigma;
+            var x:Number = Math.sqrt(-2 * Math.log(Math.random())), y:Number = Math.random()
+            cache = x * Math.cos(2*Math.PI*y);
+            return x * Math.sin(2*Math.PI*y) * sigma;
+        }
+		 
+		private function changeImage():void{
+			
+			var bitmapDataObject2:BitmapData = new BitmapData(32, 32, false, 0x00000000);
+
+			var can3:Sprite = new Sprite()
+			var x:Number, y:Number, l:int, t:Number, w:int, c:uint, n:uint
+			n = int(0.999 + 3*rat.value)
+			for(var j:uint=0; j<n; j++) {
+				x = -10+ Math.random()*52
+				y = -10 + Math.random()*52
+				l = 5 + 30*rat.value*Math.random()
+				t = 2*Math.PI * Math.random()
+				w = 1 + 3*rat.value*Math.random()
+				c = 50+ 250*rat.value*Math.random()
+				can3.graphics.lineStyle(w, c | c<<8 | c<<16 | c<<24);
+				can3.graphics.moveTo(x, y)
+			    can3.graphics.lineTo(x + l*Math.cos(t), y + l*Math.sin(t));
+			}
+			bitmapDataObject2.draw(can3,null,null,null,null,true);
+			
+			var m:Matrix = new Matrix()
+			m.scale(32/imdraw.width, 32/imdraw.height)
+			m.translate(-16,-16)
+			m.concat(new Matrix(1,0,-skew.value,1))
+			m.scale(scalex.value, scaley.value)
+			m.rotate(Math.PI* rot.value/180)
+			m.translate(transx.value, transy.value)
+			m.translate(16,16)
+			
+			bitmapDataObject2.draw(can2,m,null,null,null,true);
+
+			var rect:Rectangle = new Rectangle(0, 0, 32, 32);
+			var bytes:ByteArray = bitmapDataObject2.getPixels(rect);
+			
+			bytes.position = 0;
+			for(var i:uint=0; i<4*32*32; i+=4) {
+				//bytes[i]=0
+				var g:int = bytes[i+1]
+				
+				if (Math.random() < spnoise.value/5)
+				g = Math.random() * 255
+				
+				g += RandNormal(gnoise.value*55)
+				g = Math.min(Math.max(g,0),255)
+				
+				g = 127.5 + (g-127.5)*contr.value
+				bytes[i+1]=bytes[i+2]=bytes[i+3] = g 
+			}
+			
+     		bitmapDataObject2.setPixels(rect, bytes);
+
+			var myBitmap:Bitmap = new Bitmap(bitmapDataObject2);
+			img.source = myBitmap;
+			
+			NormImage();
+		}
+		
+		private function NormImage():void{
+			var rect:Rectangle = new Rectangle(0, 0, 32, 32);
+
+			/*var f:BlurFilter = new BlurFilter(5.0, 5.0, 1);
+			var b2:BitmapData = new BitmapData(32, 32, false, 0);
+			b2.applyFilter(img.source.bitmapData, rect, new Point(0,0), f);*/
+			//var b2:BitmapData = img.source.bitmapData.clone();
+
+			var bytes:ByteArray = img.source.bitmapData.getPixels(rect);
+			bytes.position = 0;
+			
+			var pix:Array = new Array(32*32);
+			var i:int, j:int;
+			for(i=0; i<32*32; i++)
+				pix[i] = bytes[4*i+1];
+
+			var ind:Array = pix.sort(Array.RETURNINDEXEDARRAY | Array.NUMERIC);
+			var med:Number = pix[ind[32*32/2]];
+			var ci:Number = 0, cj:Number = 0, s:Number = 0, mtot:Number=0;
+			for(i=0; i<32; i++)
+			for(j=0; j<32; j++) {
+				var g:int = pix[j*32+i];
+				g = Math.abs(g-med);
+				mtot += g;
+				ci += g*i;
+				cj += g*j;
+			}
+			ci /= mtot;
+			cj /= mtot;
+
+			for(i=0; i<32; i++)
+			for(j=0; j<32; j++) {
+				g = pix[j*32+i];
+				g = Math.abs(g-med);
+				s += g* ((i-ci)*(i-ci) + (j-cj)*(j-cj));
+			}
+			s = Math.sqrt(s / mtot);
+			s = Math.max(s, 3)
+			s = 9/s;
+						
+			var bitmapDataObject2:BitmapData = new BitmapData(32, 32, false, med | med<<8 | med<<16);
+
+			var m:Matrix = new Matrix()
+			m.translate(-ci, -cj)
+			m.scale(s, s)
+			m.translate(16, 16)
+						
+			bitmapDataObject2.draw(img.source.bitmapData,m,null,null,null,true);
+
+			var myBitmap:Bitmap = new Bitmap(bitmapDataObject2);
+			imnorm.source = myBitmap;
+		}
+	]]>
+</mx:Script>
+	<mx:CheckBox x="840" y="309" label="Digits" selected="true" id="ch_dig"/>
+	<mx:CheckBox x="840" y="338" label="Uppercase letters" selected="true" id="ch_upper"/>
+	<mx:CheckBox x="840" y="368" label="Lowercase letters" selected="true" id="ch_lower"/>
+	<mx:Canvas x="863" y="419" width="130" height="8" borderStyle="solid" borderColor="#B1C6CA" backgroundColor="#567B83" id="rec0">
+	</mx:Canvas>
+	<mx:Label x="839" y="442" text="Y" id="lab1" width="43" height="36" fontSize="12" fontWeight="bold" textAlign="left" color="#0B333C" fontFamily="Verdana"/>
+	<mx:Canvas x="863" y="448" width="130" height="8" borderStyle="solid" borderColor="#B1C6CA" backgroundColor="#567B83" id="rec1">
+	</mx:Canvas>
+	<mx:Label x="839" y="471" text="Z" id="lab2" width="43" height="36" fontSize="12" fontWeight="bold" textAlign="left" color="#0B333C" fontFamily="Verdana"/>
+	<mx:Canvas x="863" y="477" width="130" height="8" borderStyle="solid" borderColor="#B1C6CA" backgroundColor="#567B83" id="rec2">
+	</mx:Canvas>
+	<mx:ComboBox x="912" y="234" editable="false" id="modelnum" selectedIndex="1"><mx:ArrayCollection>
+         <mx:String>Shallow MLP 500 h.u. /NIST</mx:String>
+         <mx:String>Deep SDA 3x1000 h.u. /P07</mx:String>
+      </mx:ArrayCollection></mx:ComboBox>
+	<mx:Button x="475" y="60" label="Reset" click="transx.value=transy.value=0;scalex.value=scaley.value=1; rot.value=skew.value=spnoise.value=gnoise.value=rat.value=0; contr.value=1; changeImage();"/>
+	<mx:Label x="371" y="260" text="Polarity / Contrast" width="108" height="20"/>
+	<mx:HSlider x="503" y="262" id="contr" liveDragging="true" minimum="-1" maximum="1" change="changeImage()" value="1"/>
+	<mx:Label x="371" y="288" text="Crossings Amount" width="108" height="20"/>
+	<mx:Label x="115" y="444" text="Thickness" width="108" height="20"/>
+	<mx:HSlider x="503" y="290" id="rat" liveDragging="true" minimum="0" maximum="1" change="changeImage()" value="0"/>
+	<mx:Image x="992" y="285" width="100" height="100" id="imnorm" autoLoad="true" scaleContent="true"/>
+	<mx:HSlider x="194" y="443" id="thickness" liveDragging="true" minimum="0.1" maximum="10" value="1.9" width="121"/>
+	<mx:Button x="671" y="221" label="Shuffle" click="changeImage()" width="71"/>
+		
+</mx:Application>
+
+

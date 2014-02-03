@@ -1,0 +1,100 @@
+|||
+|||Reviews For Paper
+|||Paper ID	249
+|||Title	Deep Self-Taught Learning for Handwritten Character Recognition
+|||Masked Reviewer ID:	Assigned_Reviewer_1
+|||Review:	
+|||Question	 
+|||Comments to author(s). First provide a summary of the paper, and then address the following criteria: Quality, clarity, originality and significance. (For detailed reviewing guidelines, see http://nips.cc/PaperInformation/ReviewerInstructions)	 The authors apply self-taught learning to various deep learners for the purpose of handwritten character recognition. They construct new datasets that are larger and contain more (artificial) noise than the standard NIST, and show that the successful performance of previous models can be replicated on these datasets. They show that training with out-of-distribution samples (either perturbed or from other classes) improves the performance of deep learners, and does so more than for a shallow learner. 
+|||
+|||The paper is well-written and the contributions are presented clearly. However, this paper only presents the results established methods to an application that is already essentially solved. 
+
+Reviewer_1 claims that handwriting recognition is essentially solved: we believe this is not true. Yes the best methods have been getting essentially human performance in the case of clean digits. But we are not aware of previous papers achieving human performance on the full character set. It is clear from our own experimentation (play with the demo to convince yourself) that humans still clearly outperform machines when the characters are heavily distorted (e.g. as in our NISTP dataset). 
+
+|||While the experiments were run thoroughly and engineered well, the results are not intended to compete with the state-of-the-art, so this is not an application paper. While the main conclusion -- that self-taught learning helps deep learners -- is somewhat interesting, it is not shown to apply generally, and even so is not significant enough to merit acceptance since both the models and self-taught learning methods have been previously shown to be useful (albeit separately). 
+
+"...not intended to compete with the state-of-the-art...": We had included comparisons with the state-of-the-art on the NIST dataset (and beat it).
+
+|||
+|||Because the experiments were run well, the new datasets are useful contributions, and the demonstration that self-taught learning can help deep learners is helpful, it would be good for other researchers to see this work. It would be appropriate for a workshop or technical report, or as part of a review or survey paper.
+
+"the demonstrations that self-taught learning can help deep learners is helpful": indeed, but it is even more interesting to consider the result that self-taught learning was found MORE HELPFUL FOR DEEP LEARNERS THAN SHALLOW ONES. Since out-of-distribution data is common (especially out-of-class data), this is practically important.
+
+|||Please summarize your review in 1-2 sentences	 Since there is no technical or methodological contribution, this paper should not be accepted to this conference.
+|||Masked Reviewer ID:	Assigned_Reviewer_4
+|||Review:	
+|||Question	 
+|||Comments to author(s). First provide a summary of the paper, and then address the following criteria: Quality, clarity, originality and significance. (For detailed reviewing guidelines, see http://nips.cc/PaperInformation/ReviewerInstructions)	 The paper presents an empirical study that tries to assess whether current models with deep architectures can benefit from out-of-distribution samples (i.e. unlabeled data that may come from other distributions). In particular, the paper concentrates on the task of classifying handwritten characters, where some the training "out-of-distribution" samples are generated using translation. slant, as well as different noise models. 
+|||
+|||The paper makes two contributions. First, the authors show that deep learners work well on a much larger task: 800,000 samples from 62 classes. And second, it is empirically observed that deep models benefit from additional unlabeled data that may come from a "somewhat" different distribution (i.e. perturbed characters). Finally, empirically, deep models benefit more from out-of-distribution examples compared to shallow learners. 
+|||
+|||Much of the deep learning research has not gone much into solving multi-task or transfer learning problems and I welcome such research. In particular, the authors show that training using a large number of classes (English letters and digits) and using various distorted images, improves model performance of deep learners when testing for a specific task (i.e. testing only on 10 digits classes). 
+|||
+|||Another interesting observation is that deep learners benefit more from multi-task learning compared to shallow multi-layer perceptrons. It would also be interesting to compare to SVMs that are built incrementally, i.e. fit SVMs using a subset of data, retain support vectors, add more data, etc. This would better justify empirical findings. 
+|||
+
+Reviewer_4, "It would also be interesting to compare to SVMs...": ordinary SVMs cannot be used on such large datasets. We will explore SVM variants such as the suggestion made to add SVM results to the paper.
+
+|||While the paper is mostly empirical, it would be helpful to provide some theoretical analysis. It would be interesting to work out under what conditions one would expect deep models to benefit from out-of-distribution examples (obviously if the distribution of those examples is very different, it would naturally hurt model performance), or when one would expect deep models to benefit more from multi-task setting compared to shallow learners. 
+|||
+
+"...it would be helpful to provide some theoretical analysis...": indeed, but this is either mathematically
+challenging (to say the least) or would likely require very strong assumptions on the data distribution. Remember also that deep models involve a non-convex optimization. However, there is already a body of theoretical literature which answers some basic questions about this issue, starting with the work of Jonathan Baxter (COLT 1995) "Learning internal representations". We will add that citation. Basically, the argument is about capacity and sharing it across tasks so as to achieve better generalization. The lower layers implement features that can potentially be shared across tasks. As long as some sharing is possible (because the same features can be useful for several tasks), then there is a potential benefit that can be achieved with shared internal representations. Whereas a one-hidden-layer MLP can only share linear features, a deep architecture can share non-linear ones which have the potential for representing more abstract concepts.
+
+|||Please summarize your review in 1-2 sentences	 The paper is mostly well-written and provides an extensive empirical study showing that model with deep architectures can benefit from self-taught learning setting. 
+|||Masked Reviewer ID:	Assigned_Reviewer_5
+|||Review:	
+|||Question	 
+|||Comments to author(s). First provide a summary of the paper, and then address the following criteria: Quality, clarity, originality and significance. (For detailed reviewing guidelines, see http://nips.cc/PaperInformation/ReviewerInstructions)	 In this manuscript, the authors describe the use of a deep-architecture perceptron to perform handwritten character recognition (where "deep" in this case denotes the use of three hidden layers). The authors introduce a detailed set of random perturbation (i.e. noise-adding) procedures specific to the problem of character classification, and show that these work well in conjunction with stacked denoising autoencoders (SDAs) for the application at hand. The authors consider larger data sets and larger numbers of categories than in previous character recognition studies, and show that their system achieves a classification accuracy that is competitive with human performance on the same task. They address several key questions about the use of deep architectures and self-learning / multitask learning, and introduce hypotheses that suggest directions for future work. 
+|||
+|||Quality - The paper is technically sound. The only possible technical shortcomings I see are (1) that the authors seem to equate unsupervised learning with either the addition of noise to training examples, or the use of untested categories (i.e., multi-task learning); it might be useful to also quantify the improvement seen when the SDAs are applied with unlabeled data (without added noise, and without superfluous categories). It is also not completely clear in the setup which (fraction of) data is labeled, which not, and how it is used in training. For instance, NIST comes with annotations, so are all distorted images assumed to belong to the same class, etc. 
+|||
+
+Reviewer_5 about semi-supervised learning: In the unsupervised phase, no labels are used. In the supervised fine-tuning phase, all labels are used, so this is not the semi-supervised setting. This paper did not examine the potential advantage of exploiting large quantities of additional unlabeled data, but the availability of the generated dataset and of the learning setup would make it possible to indeed conduct easily an empirical study to answer this interesting question. Note however that previous work [5] already investigated the relative advantage of the semi-supervised setting for deep vs shallow architectures, which is why we did not focus on this here. It might still be worth to do these experiments because the deep learning algorithms were different.
+
+|||And (2) I'm not sure how accurately the scores from Amazon Mechanical Turks (AMT) indicate human-level performance, since human errors may be present either in the AMT predictions or in the original hand-curation of the labeled test data. 
+|||
+
+"...human errors may be present...": Indeed, there are variations across human labelings, which have have estimated (exploiting the fact that each character was viewed by 3 different humans), and reported in the paper (the standard deviations across humans are large, but the standard error across a large test set is very small, so we believe the average error numbers to be fairly accurate).
+
+|||Clarity - The paper is fairly clearly written, with a few spelling and grammatical errors. Most importantly, the description of the SDA training could be improved and expanded to aid non-specialist readers. (In order to understand the training approach I had to read several of the cited papers). Shortening section 2 (possibly relegating details such as parameter ranges to the supplement) should free up enough space to add a gentle introduction to deep learning with SDAs, which makes it clear that the purpose of deep learning is to induce hierarchical features from raw data via unsupervised methods (it was not made explicit in the manuscript that the input features were (I presume) the raw pixel values of the character images). Note that the authors do cite a supplement, but I did not have access to it.
+
+"...authors do cite a supplement, but I did not have access to it...": that is strange. We could (and still can) access it from the CMT web site. We will make sure to include a complete pseudo-code of SDAs in it.
+
+|||Finally, the distinction between semi-supervised and self-taught learning should be better explained. 
+|||
+|||Originality - The main contributions of the manuscript is a well-organized evaluation of previously described approaches to assess the benefits of deep learning -- the use of larger data sets (including larger numbers of categories), the framework of image transformations to generate appropriate larger sets for self-taught learning, and the results showing performance comparable to that of humans. The main theoretical result seems to be that adding noise to training examples and/or including categories during training that are not used during testing (i.e., "borrowing strength" via multitask learning) improves classification accuracy even when extremely large numbers of labeled training examples are available. The utility of added noise during training has been well-known for many years, but had previously been thought to result from generalization error induced by bias in the training set (i.e., limited sample sizes), whereas the authors show that the advantage persists even for large sample sizes. 
+|||
+
+"Reviewer_5 on...The main contributions of the manuscript...": the main contribution is actually to show that the self-taught learning setting is more beneficial to deeper architectures.
+
+|||Significance - The results of this paper are very good, and the ideas are of importance not only within the specific application of character recognition. One limit is the restriction to MLPs and not other more recent learning approaches. 
+|||
+
+"...restriction to MLPs...": that restriction was motivated by the computational challenge of training on hundreds of millions of examples. Apart from linear models (which do not fare well on this task and do not take advantage of large training sets), it is not clear to us what could be used, and so MLPs were the obvious candidates to compare with. We will explore the use of SVM approximations, as suggested by Reviewer_1. Other suggestions are welcome.
+
+|||Please summarize your review in 1-2 sentences	 The manuscript provides results consistent with earlier findings, and introduces a detailed set of noise-adding procedures that work well for the specific task of character recognition. The presentation should be adequately clear to other researchers working on the same task, but could be improved to make the article more accessible to nonspecialists.
+|||Masked Reviewer ID:	Assigned_Reviewer_6
+|||Review:	
+|||Question	 
+|||Comments to author(s). First provide a summary of the paper, and then address the following criteria: Quality, clarity, originality and significance. (For detailed reviewing guidelines, see http://nips.cc/PaperInformation/ReviewerInstructions)	
+|||Summary: 
+|||The paper presents a self-taught learning approach using deep architectures (e.g., stacked denoising autoencoders) for handwritten character recognition. The main idea is to generate out-of-distribution examples of digits and characters via a number of transformations and noise processes. The proposed method is simple, but it demonstrates a very good performance on NIST dataset, achieving the state-of-the-art. 
+|||
+|||Quality: 
+|||The paper appears to be technically sound and provides a number of experiments on large scale datasets. 
+|||
+|||Clarity: 
+|||The paper is clearly written. 
+|||
+|||Originality: 
+|||The novelty of the approach is somewhat marginal since the approach is reminiscent of prior work on character recognition using deformations and transformations. However, this paper shows that it can achieve the state-of-the-art performance via this approach. 
+|||
+
+"Reviewer 6:...novelty of the approach is somewhat marginal since the approach is reminiscent of prior work on character recognition using deformations and transformations".  The main originality is not there but in showing that deep learners can take more advantage than shallow learners of such data and of the self-taught learning framework in general.
+
+
+|||Significance: 
+|||The paper tries to address a number of interesting questions related to deep learning and multi-task learning. Furthermore, this work can provide a new large scale data benchmark for deep learning (beyond MNIST).
+|||Please summarize your review in 1-2 sentences	 The paper tries to address a number of interesting questions related to deep learning and multi-task learning on a large scale handwritten character dataset. Furthermore, the presented method seems to achieve the state-of-the-art. 
+|||

@@ -1,0 +1,119 @@
+# ----------------------------------------------------------------------------
+# BEGIN EXPERIMENT ISOLATION CODE
+
+'''
+This makes sure we use the codebase clone created for this experiment.
+I.e. if you want to make modifications to the codebase but don't want your
+running experiment code to be impacted by those changes, first copy the
+codebase somewhere, and configure this section. It will make sure we import
+from the right place.
+
+MUST BE DONE BEFORE IMPORTING ANYTHING ELSE
+(Leave this comment there so others will understand what's going on)
+'''
+
+# Place where you copied modules that should be fixed for this experiment
+codebase_clone_path = "/u/savardf/ift6266/experiment_clones/ift6266_experiment10"
+
+# Places where there might be conflicting modules from your $PYTHONPATH
+remove_these_from_pythonpath = ["/u/savardf/ift6266/dev_code"]
+
+import sys
+sys.path[0:0] = [codebase_clone_path]
+
+# remove paths we specifically don't want in $PYTHONPATH
+for bad_path in remove_these_from_pythonpath:
+    sys.path[:] = [el for el in sys.path if not el in (bad_path, bad_path+"/")]
+
+# Make the imports
+import ift6266
+
+# Just making sure we're importing from the right place
+modules_to_check = [ift6266]
+for module in modules_to_check:
+    if not codebase_clone_path in module.__path__[0]:
+        raise RuntimeError("Module loaded from incorrect path "+module.__path__[0])
+
+# Path to pass to jobman sqlschedule. IMPORTANT TO CHANGE TO REFLECT YOUR CLONE.
+# Make sure this is accessible from the default $PYTHONPATH (in your .bashrc)
+# (and make sure every subdirectory has its __init__.py file)
+EXPERIMENT_PATH = "ift6266_experiment10.ift6266.deep.stacked_dae.nist_sda.jobman_entrypoint"
+
+# END EXPERIMENT ISOLATION CODE
+# ----------------------------------------------------------------------------
+
+from jobman import DD
+
+'''
+These are parameters used by nist_sda.py. They'll end up as globals in there.
+
+Rename this file to config.py and configure as needed.
+DON'T add the renamed file to the repository, as others might use it
+without realizing it, with dire consequences.
+'''
+
+# Set this to True when you want to run cluster tests, ie. you want
+# to run on the cluster, many jobs, but want to reduce the training
+# set size and the number of epochs, so you know everything runs
+# fine on the cluster.
+# Set this PRIOR to inserting your test jobs in the DB.
+TEST_CONFIG = False
+
+# save params at training end
+SAVE_PARAMS = False
+
+NIST_ALL_LOCATION = '/data/lisa/data/nist/by_class/all'
+NIST_ALL_TRAIN_SIZE = 649081
+# valid et test =82587 82587 
+
+# change "sandbox" when you're ready
+JOBDB = 'postgres://ift6266h10@gershwin/ift6266h10_sandbox_db/yourtablenamehere'
+
+# reduce training set to that many examples
+REDUCE_TRAIN_TO = None
+# that's a max, it usually doesn't get to that point
+MAX_FINETUNING_EPOCHS = 1000
+# number of minibatches before taking means for valid error etc.
+REDUCE_EVERY = 100
+
+if TEST_CONFIG:
+    REDUCE_TRAIN_TO = 1000
+    MAX_FINETUNING_EPOCHS = 2
+    REDUCE_EVERY = 10
+
+
+# This is to configure insertion of jobs on the cluster.
+# Possible values the hyperparameters can take. These are then
+# combined with produit_cartesien_jobs so we get a list of all
+# possible combinations, each one resulting in a job inserted
+# in the jobman DB.
+JOB_VALS = {'pretraining_lr': [0.1, 0.01],#, 0.001],#, 0.0001],
+        'pretraining_epochs_per_layer': [10,20],
+        'hidden_layers_sizes': [300,800],
+        'corruption_levels': [0.1,0.2,0.3],
+        'minibatch_size': [20],
+        'max_finetuning_epochs':[MAX_FINETUNING_EPOCHS],
+        'finetuning_lr':[0.1, 0.01], #0.001 was very bad, so we leave it out
+        'num_hidden_layers':[2,3]}
+
+# Just useful for tests... minimal number of epochs
+# (This is used when running a single job, locally, when
+# calling ./nist_sda.py test_jobman_entrypoint
+DEFAULT_HP_NIST = DD({'finetuning_lr':0.1,
+                       'pretraining_lr':0.1,
+                       'pretraining_epochs_per_layer':2,
+                       'max_finetuning_epochs':2,
+                       'hidden_layers_sizes':800,
+                       'corruption_levels':0.2,
+                       'minibatch_size':20,
+                       'reduce_train_to':10000,
+                       'num_hidden_layers':1})
+
+# To reinsert duplicate of jobs that crashed
+REINSERT_COLS = ['pretraining_lr','pretraining_epochs_per_layer','hidden_layers_sizes','corruption_levels','minibatch_size','max_finetuning_epochs','finetuning_lr','num_hidden_layers','dupe']
+REINSERT_JOB_VALS = [\
+            [0.1,10,800,0.3,20,1000,0.01,3,2],
+            [0.1,10,800,0.4,20,1000,0.01,3,2],
+            [0.1,10,800,0.3,20,1000,0.005,3,2],
+            [0.1,10,800,0.6,20,1000,0.005,3,2]]
+

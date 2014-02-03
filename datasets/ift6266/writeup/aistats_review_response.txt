@@ -1,0 +1,31 @@
+
+We thank the authors for their thoughtful comments. Please find our responses below.
+
+* Comparisons with shallower networks, but using unsupervised pre-training. We have added those results to the paper. On the NIST test set, 62 classes,
+using NISTP to train (which gives the best results on NIST):
+  MLP (1 hidden layer, no unsupervised pre-training): 24% error
+  DA  (1 hidden layer, unsupervised pre-training):    21% error
+  SDA (2 hidden layers, unsupervised pre-training):   20% error
+  SDA (3 hidden layers, unsupervised pre-training):   17% error
+Previous work in our group with very similar data (the InfiniteMNIST dataset were published in JMLR in 2010 "Why Does Unsupervised Pre-training Help Deep Learning?"). The results indeed show improvement when going from 1 to 2 and then 3 layers, even when using unsupervised pre-training (RBM or Denoising Auto-Encoder). The experiment helps to disentangle to some extent the effect of depth with the effect of unsupervised pre-training, and confirms that both are required to achieve the best results.
+
+* Comparisons with SVMs. The main limitation of course is the size of the training set. One option is to use a non-linear SVM with a reduced training set, and the other is to use an online linear SVM.  Another option is to project the input non-linearly in a high-dimensional but sparse representation and then use an online linear SVM.  For this, we have thresholded input pixel gray levels and projected into the space of order-2 products. Results:
+
+SVM type   training set   input               online    validation test set
+            type / size   features            training  set error    error
+                                              error
+Linear SVM,  NIST,  651k,  original,           36.62%,  34.41%,     42.26%
+Linear SVM,  NIST,  651k,  sparse quadratic,   30.96%,  28.00%,     41.28%
+Linear SVM,  NISTP, 800k,  original,           88.50%,  85.24%,     87.36%
+Linear SVM,  NISTP, 800k,  sparse quadratic,   81.76%,  83.69%,     85.56%
+RBF SVM,     NISTP, 100k,  original,           74.73%,  56.57%,     64.22%
+
+The best results were obtained with the sparse quadratic input features, and training on the clean data (NIST) rather than the perturbed data (NISTP).  A summary of the above results was added to the revised paper.
+
+
+* Using distorted characters as the corruption process of the Denoising Auto-Encoder (DAE). We had already performed preliminary experiments with this idea and results varied depending on the type of distortion, but did not improve on the original noise process. We believe that the DAE learns good features when the target to reconstruct is more likely than the corrupted input.  concentrate. Hence distortions that are *plausible* in the input distribution (such as translation, rotation, scaling, etc.) are not very useful, whereas corruption due to a form of noise are useful. Consider also the symmetries involved: a translation is as likely to be to the right or to the left, so it is hard to predict.
+
+* Human labeling: We controlled noise in the labelling process by (1) requiring AMT workers with a higher than normal average of accepted responses (>95%) on other tasks (2) discarding responses that were not complete (10 predictions) (3) discarding responses for which for which the time to predict was smaller than 3 seconds for NIST (the mean response time was 20 seconds) and 6 seconds seconds for NISTP (average response time of 45 seconds) (4) discarding responses which were obviously wrong (10 identical ones, or "12345..."). Overall, after such filtering, we kept approximately 95% of the AMT workers' responses. The above paragraph was added to the revision. We thank the reviewer for the suggestion about multi-stage questionnaires, we will definitely consider this as an option next time we perform this experiment. However, to be fair, if we were to do so, we should also consider the same multi-stage decision process for the machine learning algorithms as well.
+
+* Size of labeled set: in our JMLR 2010 paper on deep learning (cited above, see fig. 11), we already verified the effect of number of labeled examples on the deep learners and shallow learners (with or without unsupervised pre-training). Basically (and somewhat surprisingly) the deep learners with unsupervised pre-training can take more advantage of a large amount of labeled examples, presumably because of the initialization effect and the effect does not disappear when the number of labeled examples increases. Similar results were obtained in the semi-supervised setting (Lee et al, NIPS2009).  Adding the training curve in the self-taught settings of this AISTAT submission is a good idea, and we will have it for the final version.
+

@@ -1,0 +1,25 @@
+
+Reviewer_1 claims that handwriting recognition is essentially solved: we believe this is not true. Yes the best methods have been getting essentially human performance in the case of clean digits. But we are not aware of previous papers achieving human performance on the full character set. It is clear from our own experimentation (play with the demo to convince yourself) that humans still clearly outperform machines when the characters are heavily distorted (e.g. as in our NISTP dataset).
+
+"...not intended to compete with the state-of-the-art...": We had included comparisons with the state-of-the-art on the NIST dataset (and beat it).
+
+
+"the demonstrations that self-taught learning can help deep learners is helpful": indeed, but it is even more interesting to consider the result that self-taught learning was found *more helpful for deep learners than for shallow ones*. Since out-of-distribution data is common (especially out-of-class data), this is of practical importance.
+
+Reviewer_4, "It would also be interesting to compare to SVMs...": ordinary SVMs cannot be used on such large datasets. When training on smaller datasets they perform much worse than MLPs (above 30% vs 24% for MLPs on NIST 62 characters). We will explore SVM variants that can exploit large datasets, such as the suggestion made to add SVM results to the paper.
+
+
+"...it would be helpful to provide some theoretical analysis...": indeed, but this appears mathematically challenging (to say the least, since deep models involve a non-convex optimization) or would likely require very strong distributional assumptions. However, previous theoretical literature already provides some answers, e.g., Jonathan Baxter's (COLT 1995) "Learning internal representations". The argument is about sharing capacity across tasks to improve generalization: lower layers features can potentially be shared across tasks. Whereas a one-hidden-layer MLP can only share linear features, a deep architecture can share non-linear ones which have the potential for representing more abstract concepts.
+
+Reviewer_5 about semi-supervised learning: In the unsupervised phase, no labels are used. In the supervised fine-tuning phase, all labels are used.  So this is *not* the semi-supervised setting, which was already previously studied [5], showing the advantage of depth. Instead, we focus here on the out-of-distribution aspect of self-taught learning.
+
+"...human errors may be present...": Indeed, there are variations across human labelings, which have been estimated (since each character was viewed by 3 different humans), and reported in the paper (the standard deviations across humans are large, but the standard error across a large test set is very small, so we believe the average error numbers to be fairly accurate).
+
+"...supplement, but I did not have access to it...": strange!  We could (and still can) access it. We will include a complete pseudo-code of SDAs in it.
+
+"...main contributions of the manuscript...": the main contribution is actually to show that the self-taught learning setting is more beneficial to deeper architectures.
+
+"...restriction to MLPs...": that restriction was motivated by the computational challenge of training on nearly a billion examples. Linear models do not fare well here, and most non-parametric models do not scale well, so MLPs (which have been used before on this task) were natural as the baseline. We will explore the use of SVM approximations, as suggested by Reviewer_1.
+
+"Reviewer 6:...novelty [..] is somewhat marginal since [...] reminiscent of prior work on character recognition using deformations and transformations".  Main originality = showing that deep learners can take more advantage than shallow learners of such data and of the self-taught learning framework in general.
+

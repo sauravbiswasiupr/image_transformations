@@ -1,0 +1,77 @@
+This paper presents an experimental analysis of the generalization effects of supervised learning leveraging additional out-of-distribution data and certain kinds of perturbations and transformations of examples (handwritten characters). Overall, I feel the paper is interesting, but in its current form the basic content would be more suitable for a conference publication than JMLR.
+There are no new algorithmic advances proposed, as the authors use a number of existing techniques (neural networks, deep learning auto-encoders, multi-task learning, semi-supervised learning and self-taught learning).
+What they do show is that some combinations of these approaches might be quite useful for deep networks. However, I feel there are some missing points both in the text and the experiments themselves, that I detail below.
+
+Comments about the Introduction:
+
+Firstly, a small point: the introduction does not do a good job in explaining the two main topics: "deep learning" and particularly "self-taught learning" (and as there is really no "middle" part of this paper, it just goes straight to experiments after the introduction, there is little elsewhere, either). The deep-learning paragraph explains multi-layer neural nets and why they might be useful, and states "deep learning has emerged as a promising new area of research", but it seems to me the only new area of research is the way they are trained, which should be explained here in the text -- that is not mentioned which is misleading.  (Actually something about deep learning is explained later, but it seems as if it is in the wrong section, it is in the ``self-taught learning'' paragraphs.) More importantly I feel that the self-taught learning section fails to explain adequately what self-taught learning even is. It is written:
+
+``Self-taught learning (Raina et al., 2007) is a paradigm that combines principles of semi-supervised and multi-task learning: the learner can exploit examples that are unlabeled and possibly come from a distribution different from the target distribution, e.g., from other classes than those of interest.''
+
+Firstly, this tries to explain one concept by introducing two others that are not explained (semi-supervised learning and multi-task learning). Secondly, I don't think it's clear from that description that there is also labeled data involved here. I think Raina's website explains it more clearly:
+
+"In self-taught learning, we are given a small amount of labeled data for a supervised learning task, and lots of additional unlabeled data that does not share the labels of the supervised problem and does not arise from the same distribution. This paper introduces an algorithm for self-taught learning based on sparse coding."
+
+Comparing the two descriptions I also find the word ``possibly'' troubling in the paper -- why write ``possibly'' here? If the data is not out-of-distribution, then this is just semi-supervised learning, isn't it? 
+
+I think as this paper hinges on deep learning and self-taught learning more should be done to explain them. In particular, very little of Raina et al.'s approach is explained, e.g. the algorithm they used or the experiments that were conducted. Moreover, other papers have worked on the same setting, and a section discussing prior work should be added. In particular:
+
+	J. Weston, R. Collobert, F. Sinz, L. Bottou and V. Vapnik. "Inference with the Universum", ICML 2006
+
+also studies algorithms for learning with labeled data + out-of-sample unlabeled data, and even have experiments with hand-written character recognition with many classes.
+Also, I guess that several works have looked at learning in the case of a different distribution in training than in test, e.g to name one:
+
+	Yishay Mansour, Mehryar Mohri, and Afshin Rostamizadeh. 
+	Domain adaptation: Learning bounds and algorithms. 
+	In Proceedings of The 22nd Annual Conference on Learning Theory (COLT 2009). MontrÃ©al, Canada, June 2009. Omnipress. Longer arxiv version.
+
+Perhaps that area of research is worth mentioning too.
+
+The introduction also states:  ``It has already been shown that deep learners can clearly take advantage of unsupervised learning and unlabeled examples (Bengio, 2009; Weston et al., 2008),  but more needs to be done to explore the impact of out-of-distribution examples and of the multi-task setting (one exception is (Collobert and Weston, 2008), which uses a different kind of learning algorithm). In particular the relative advantage of deep learning for these settings has not been evaluated. "
+
+Several points here:
+- The first sentence should make it clear this is semi-supervised learning that also uses labeled examples (I do not think it is clear).
+- I'm not sure what ``which uses a different kind of learning algorithm'' means -- different to what? To the algorithm in this paper, to Raina et al., or something else.. ? 
+- I believe if one is going to discuss the multi-task setting, then several other works should be cited and explained, in particular:
+	Rich Caruana, "Multitask Learning," Ph.D. Thesis, School of Computer Science, CMU, 1997.
+for multi-tasking in neural networks (although I am sure there are many other works as well), and:
+        A Framework for Learning Predictive Structures from Multiple Tasks and Unlabeled Data. Rie K. Ando and Tong Zhang. Journal of Machine Learning Research, Vol 6:1817-1853, 2005. 
+which uses multi-tasking in the setting of semi-supervised learning. I'm sure there are other works as well.
+- Finally, I believe there are more ``exceptions'' than Collobert and Weston, 2008. For example: 
+	H. Mobahi, R. Collobert, J. Weston. Deep Learning from Temporal Coherence in Video. ICML 2009. 
+seems to directly compare within distribution and out-of-distribution unlabeled data for convolutional networks. The fact that there are already papers on this topic (and that you do not take the time to explain the differences between these and your own work) lessens the impact. 
+
+I think the phrase ``Whereas a deep architecture can in principle be more powerful than a shallow one in terms of representation'' cannot be written without at least a citation, and I think it depends what you mean by the word ``powerful'' doesn't it? E.g. can't you have infinite VC dimension with a shallow representation?  (Also, I don't think you define what a ``shallow learner'' is anywhere, more explanation always helps.) Also, I feel it would be better if ``sharing of statistical strength'', which is in italics, was explained.
+
+Finally, this is just a style point, but I feel there is too much use of bold and italics at the end of the introduction. You should sell your paper, but sometimes one can go overboard.
+ 
+
+Section 2:
+
+Section 2 is a relatively large chunk of the paper (3 pages) and could basically be put in the appendix, couldn't it? Or else, little is done to justify why it is placed in the paper right after the introduction.  After that section, we are straight to the experiments -- it feels like the paper has some missing sections and was not fully written somehow. It goes straight from the introduction to ``Perturbed and Transformed Character Images'' which is not what I was expecting. For example, I was expected more details of self-taught learning and why it would help.
+I think describing/citing previous work on learning invariances and transforming images would make sense in the context of this section too.
+
+Experiments:
+
+``Much previous work on deep learning had been performed on the MNIST digits task (Hinton et al., 2006; Ranzato et al., 2007; Bengio et al., 2007; Salakhutdinov and Hinton, 2009), with 60 000 examples, and variants involving 10 000 examples (Larochelle et al., 2009b; Vincent et al., 2008b). The focus here is on much larger training sets, from 10 times to to 1000 times larger, and 62 classes.''
+I feel this is unfair. There are many large scale deep learning papers with large datasets. You should make that clear, e.g.:
+
+	Large-scale Deep Unsupervised Learning using Graphics Processors, Rajat Raina, Anand Madhavan, Andrew Y. Ng , ICML 2009
+
+to name one, but there are many others...
+
+Sec. 3: `` The average error of humans on the 62-class task NIST test set is 18.2%, with a standard error of 0.1%.''.  I think at this point you should explain why this is so high.
+
+``Preliminary experiments on training SVMs (libSVM) with subsets of the training set allowing the program to fit in memory yielded substantially worse results than MLPs."
+-- I think you should mention here work done trying to speed up SVMs for exactly this task, e.g.:
+	GaÃ«lle Loosli, StÃ©phane Canu and LÃ©on Bottou: Training Invariant Support Vector Machines using Selective Sampling, in Large Scale Kernel Machines,  301â€“320, MIT Press, Cambridge, MA., 2007.
+where the authors trained an SVM on 8100000 examples generated from MNIST. Also, showing a learning curve might be nice if you can't do the training with the full data. 
+
+The experimental results look on the whole good. However, I still feel the following issues could be resolved:
+
+- The shallow MLP as I understand has a max number of hidden units of 1500, whereas the deep MLP has three layers of 1000 hidden units. Hence, the deep MLPs have a lot more capacity. So shouldn't you try shallow MLPs with more hidden units? It would also be good to show training and test error rates for different number of hidden units.
+- If many shallow and deep MLP methods, and other non-MLP methods, have been compared on MNIST, why not comparing on that as well? You can still do this in a self-taught learning setup, e.g. using other data as unlabeled data, no?
+- The idea of transforming digits seems closer to learning invariances than self-taught learning to me? This should be discussed.
+- There is no comparison to Raina et. al, despite using their idea of ``self-taught learning'' in the title. Indeed, could Raina et al.'s algorithm be compared in both shallow and deep mode? I feel as this is only an experimental paper, more permutations could be done to understand this phenomenon more.
+
+

@@ -1,0 +1,97 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{times}
+\usepackage{wrapfig}
+\usepackage{amsthm,amsmath,bbm} 
+\usepackage[psamsfonts]{amssymb}
+\usepackage{algorithm,algorithmic}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx,subfigure}
+\usepackage[numbers]{natbib}
+
+\addtolength{\textwidth}{10mm}
+\addtolength{\evensidemargin}{-5mm}
+\addtolength{\oddsidemargin}{-5mm}
+
+%\setlength\parindent{0mm}
+
+\begin{document}
+
+\begin{center}
+{\Large Deep Self-Taught Learning for Handwritten Character Recognition}
+
+{\bf \large Information on Main Contributions}
+\end{center}
+
+\setlength{\parindent}{0cm}
+
+%\vspace*{-2mm}
+\section*{Background and Related Contributions}
+%\vspace*{-2mm}
+%{\large \bf Background and Related Contributions}
+
+Recent theoretical and empirical work in statistical machine learning has
+demonstrated the potential of learning algorithms for {\bf deep
+  architectures}, i.e., function classes obtained by composing multiple
+levels of representation
+\citep{Hinton06,ranzato-07-small,Bengio-nips-2006,VincentPLarochelleH2008,ranzato-08,Larochelle-jmlr-2009,Salakhutdinov+Hinton-2009,HonglakL2009,HonglakLNIPS2009,Jarrett-ICCV2009,Taylor-cvpr-2010}.
+See~\citet{Bengio-2009} for a review of deep learning algorithms.
+
+{\bf Self-taught learning}~\citep{RainaR2007} is a paradigm that combines
+principles of semi-supervised and multi-task learning: the learner can
+exploit examples that are unlabeled and possibly come from a distribution
+different from the target distribution, e.g., from other classes than those
+of interest.  Self-taught learning has already been applied to deep
+learners, but mostly to show the advantage of unlabeled
+examples~\citep{Bengio-2009,WestonJ2008-small}.
+
+There already are theoretical arguments~\citep{baxter95a} supporting the claim
+that learning an {\bf intermediate representation} shared across tasks can be
+beneficial for multi-task learning. It has also already been argued~\citep{Bengio-2009}
+that {\bf multiple levels of representation} can bring a benefit over a single level.
+
+%{\large \bf Main Claim}
+%\vspace*{-2mm}
+\section*{Main Claim}
+%\vspace*{-2mm}
+
+We claim that deep learners, with several levels of representation, can
+benefit more from self-taught learning than shallow learners (with a single
+level), both in the context of the multi-task setting and from {\em
+  out-of-distribution examples} in general.
+
+%{\large \bf Contribution to Machine Learning}
+%\vspace*{-2mm}
+\section*{Contribution to Machine Learning}
+%\vspace*{-2mm}
+
+We show evidence for the above claim in a large-scale setting, with
+a training set consisting of hundreds of millions of examples, in the
+context of handwritten character recognition with 62 classes (upper-case,
+lower-case, digits).
+
+%{\large \bf Evidence to Support the Claim}
+%\vspace*{-2mm}
+\section*{Evidence to Support the Claim}
+%\vspace*{-2mm}
+
+In the above experimental setting, we show that {\em deep learners benefited
+significantly more from the multi-task setting than a corresponding shallow
+  learner}. and that they benefited more from {\em distorted (out-of-distribution) examples}
+(i.e. from a distribution larger than the one from which test examples come from).
+
+In addition, we show that they {\em beat previously published results} on this task 
+(the MNIST special database 19)
+and {\bf reach human-level performance} on both handwritten digit classification and
+62-class handwritten character recognition.
+
+\newpage
+
+{\small
+\bibliography{strings,strings-short,strings-shorter,ift6266_ml,specials,aigaion-shorter}
+%\bibliographystyle{plainnat}
+\bibliographystyle{unsrtnat}
+%\bibliographystyle{apalike}
+}
+
+
+\end{document}
